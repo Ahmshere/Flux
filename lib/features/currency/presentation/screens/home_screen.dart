@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../core/l10n/app_strings.dart';
-import '../../../../main.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/lang_provider.dart';
 import '../state/currency_notifier.dart';

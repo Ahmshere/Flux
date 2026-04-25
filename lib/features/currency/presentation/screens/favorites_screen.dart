@@ -14,8 +14,8 @@ class FavoritesTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c         = context.appColors;
-    final s         = ref.watch(stringsProvider);
+   // final c         = context.appColors;
+   // final s         = ref.watch(stringsProvider);
     final favorites = ref.watch(favoritesProvider);
     final state     = ref.watch(currencyProvider);
     final rates     = state.rates;

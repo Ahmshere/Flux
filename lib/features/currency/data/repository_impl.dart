@@ -4,7 +4,6 @@ import '../domain/entities/rate.dart';
 import '../domain/repositories/currency_repository.dart';
 import 'datasources/local_datasource.dart';
 import 'datasources/remote_datasource.dart';
-import 'models/rates_model.dart';
 
 class CurrencyRepositoryImpl implements CurrencyRepository {
   final RemoteDatasource _remote;
