@@ -1,0 +1,60 @@
+Folder PATH listing for volume NEW_ONE
+Volume serial number is AE88-B552
+G:.
+│   main.dart
+│   tree.txt
+│   
+├───core
+│   ├───constants
+│   │       app_constants.dart
+│   │       
+│   ├───network
+│   │       api_client.dart
+│   │       
+│   ├───nlp
+│   │       natural_parser.dart
+│   │       
+│   ├───proveders
+│   │       app_providers.dart
+│   │       
+│   └───theme
+│           app_theme.dart
+│           
+└───features
+    └───currency
+        ├───data
+        │   │   repository_impl.dart
+        │   │   
+        │   ├───datasources
+        │   │       local_datasource.dart
+        │   │       remote_datasource.dart
+        │   │       
+        │   └───models
+        │           rates_model.dart
+        │           rates_model.g.dart
+        │           
+        ├───domain
+        │   ├───entities
+        │   │       rate.dart
+        │   │       
+        │   ├───repositories
+        │   │       currency_repository.dart
+        │   │       
+        │   └───usecases
+        │           convert_currency.dart
+        │           
+        └───presentation
+            ├───screens
+            │       home_screen.dart
+            │       
+            ├───state
+            │       currency_notifier.dart
+            │       
+            └───widgets
+                    converter_card.dart
+                    error_view.dart
+                    mini_chart.dart
+                    natural_input_widget.dart
+                    quick_amounts.dart
+                    rate_info_bar.dart
+                    
