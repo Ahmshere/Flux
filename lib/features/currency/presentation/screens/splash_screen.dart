@@ -21,16 +21,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigate() async {
-    // Ждём пока анимация отыграет
     await Future.delayed(const Duration(milliseconds: 1800));
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => const HomeScreen(),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: anim,
-          child: child,
-        ),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
         transitionDuration: const Duration(milliseconds: 400),
       ),
     );
@@ -44,17 +41,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Иконка
+            // ── Иконка из assets ────────────────────────────────────────────
             Container(
-              width: 96,
-              height: 96,
+              width: 96, height: 96,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.accent, AppTheme.accentLight],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.accent.withOpacity(0.4),
@@ -63,8 +54,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   ),
                 ],
               ),
-              child: const Center(
-                child: Text('💱', style: TextStyle(fontSize: 48)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.asset(
+                  'assets/icon.png',
+                  width: 96, height: 96,
+                  fit: BoxFit.cover,
+                ),
               ),
             )
                 .animate()
@@ -78,29 +74,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
             const Gap(24),
 
-            // Название
+            // ── Название ────────────────────────────────────────────────────
             const Text(
               'Flux',
               style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: -1,
+                fontSize: 36, fontWeight: FontWeight.w800,
+                color: Colors.white, letterSpacing: -1,
               ),
             )
                 .animate()
                 .fadeIn(delay: 300.ms, duration: 400.ms)
                 .slideY(
-                  begin: 0.3,
-                  end: 0,
-                  delay: 300.ms,
-                  duration: 400.ms,
+                  begin: 0.3, end: 0,
+                  delay: 300.ms, duration: 400.ms,
                   curve: Curves.easeOut,
                 ),
 
             const Gap(8),
 
-            // Подзаголовок
             Text(
               'Smart Currency Converter',
               style: TextStyle(
@@ -109,25 +100,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 fontWeight: FontWeight.w400,
                 letterSpacing: 0.2,
               ),
-            )
-                .animate()
-                .fadeIn(delay: 500.ms, duration: 400.ms),
+            ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
 
             const Gap(60),
 
-            // Индикатор загрузки
+            // ── Прогресс-бар ────────────────────────────────────────────────
             SizedBox(
-              width: 32,
-              height: 2,
+              width: 32, height: 2,
               child: LinearProgressIndicator(
                 backgroundColor: Colors.white.withOpacity(0.1),
                 valueColor: const AlwaysStoppedAnimation<Color>(
                     AppTheme.accent),
                 borderRadius: BorderRadius.circular(1),
               ),
-            )
-                .animate()
-                .fadeIn(delay: 700.ms, duration: 300.ms),
+            ).animate().fadeIn(delay: 700.ms, duration: 300.ms),
           ],
         ),
       ),

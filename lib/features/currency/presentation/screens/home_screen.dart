@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../core/l10n/app_strings.dart';
-
+import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/lang_provider.dart';
 import '../state/currency_notifier.dart';
@@ -48,17 +48,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: state.isLoading
             ? _LoadingView(label: s.loading)
             : Column(children: [
-          const _Header(),
-          if (state.error != null && state.rates.isEmpty)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ErrorView(message: state.error!),
-              ),
-            )
-          else
-            Expanded(child: _buildBody(c, state, s)),
-        ]),
+                const _Header(),
+                if (state.error != null && state.rates.isEmpty)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: ErrorView(message: state.error!),
+                    ),
+                  )
+                else
+                  Expanded(child: _buildBody(c, state, s)),
+              ]),
       ),
     );
   }
@@ -165,7 +165,7 @@ class _Header extends ConsumerWidget {
           },
           child: isRefreshing
               ? const SizedBox(width: 16, height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('↻', style: TextStyle(fontSize: 18)),
         ),
         const Gap(6),
@@ -232,8 +232,8 @@ class _Tabs extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(labels[i], textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
-                        color: active ? Colors.white : c.textSecondary)),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                      color: active ? Colors.white : c.textSecondary)),
               ),
             ),
           );

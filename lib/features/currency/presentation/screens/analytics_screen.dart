@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../core/l10n/lang_provider.dart';
+import '../../../../core/pro/pro_provider.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../state/currency_notifier.dart';
 import '../state/analytics_notifier.dart';
+import '../state/currency_notifier.dart';
+import 'paywall_screen.dart';
 
 class AnalyticsTab extends ConsumerStatefulWidget {
   const AnalyticsTab({super.key});
@@ -16,7 +18,10 @@ class AnalyticsTab extends ConsumerStatefulWidget {
 
 class _AnalyticsTabState extends ConsumerState<AnalyticsTab> {
   int _selectedDays = 7;
-  static const _dayOptions = [7, 14, 30];
+
+  // Бесплатно: только 7 дней. PRO: 7 / 14 / 30
+  static const _freeDays  = [7];
+  static const _proDays   = [7, 14, 30];
 
   @override
   void initState() {
@@ -26,24 +31,26 @@ class _AnalyticsTabState extends ConsumerState<AnalyticsTab> {
 
   void _load() {
     final state = ref.read(currencyProvider);
-    final from  = state.fromRate?.code ?? 'USD';
-    final to    = state.toRate?.code   ?? 'EUR';
     ref.read(analyticsProvider.notifier).load(
-      fromCode: from, toCode: to, days: _selectedDays,
+      fromCode: state.fromRate?.code ?? 'USD',
+      toCode:   state.toRate?.code   ?? 'EUR',
+      days:     _selectedDays,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.appColors;
-    final s       = ref.watch(stringsProvider);
-    final state   = ref.watch(currencyProvider);
-    final an      = ref.watch(analyticsProvider);
-    final from    = state.fromRate;
-    final to      = state.toRate;
+    final c     = context.appColors;
+    final s     = ref.watch(stringsProvider);
+    final isPro = ref.watch(proProvider);
+    final state = ref.watch(currencyProvider);
+    final an    = ref.watch(analyticsProvider);
+    final from  = state.fromRate;
+    final to    = state.toRate;
+    final days  = isPro ? _proDays : _freeDays;
 
     return Column(children: [
-      // ── Пара + период ────────────────────────────────────────────────────
+      // ── Пара + переключатель периода ─────────────────────────────────────
       Row(children: [
         Expanded(
           child: Text(
@@ -54,19 +61,21 @@ class _AnalyticsTabState extends ConsumerState<AnalyticsTab> {
                 color: c.textPrimary),
           ),
         ),
-        // Переключатель периода
         Container(
           padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: c.border),
-          ),
+          decoration: BoxDecoration(color: c.surface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: c.border)),
           child: Row(
-            children: _dayOptions.map((d) {
-              final active = d == _selectedDays;
+            children: _proDays.map((d) {
+              final active  = d == _selectedDays;
+              final locked  = !isPro && d != 7;
               return GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  if (locked) {
+                    final bought = await PaywallScreen.show(context);
+                    if (!bought) return;
+                  }
                   setState(() => _selectedDays = d);
                   _load();
                 },
@@ -78,11 +87,20 @@ class _AnalyticsTabState extends ConsumerState<AnalyticsTab> {
                     color: active ? AppTheme.accent : Colors.transparent,
                     borderRadius: BorderRadius.circular(7),
                   ),
-                  child: Text('${d}d',
-                    style: TextStyle(
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text('${d}d', style: TextStyle(
                       fontSize: 12, fontWeight: FontWeight.w600,
-                      color: active ? Colors.white : c.textSecondary,
+                      color: active ? Colors.white
+                          : locked ? c.textSecondary.withOpacity(0.4)
+                          : c.textSecondary,
                     )),
+                    if (locked) ...[
+                      const Gap(3),
+                      Icon(Icons.lock_rounded,
+                          size: 9,
+                          color: c.textSecondary.withOpacity(0.4)),
+                    ],
+                  ]),
                 ),
               );
             }).toList(),
@@ -91,33 +109,83 @@ class _AnalyticsTabState extends ConsumerState<AnalyticsTab> {
       ]),
       const Gap(16),
 
-      // ── Большой график ────────────────────────────────────────────────────
+      // ── График ───────────────────────────────────────────────────────────
       Container(
         padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: c.border),
-        ),
+        decoration: BoxDecoration(color: c.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: c.border)),
         child: an.isLoading
-            ? SizedBox(height: 180,
-                child: Center(child: CircularProgressIndicator(
-                    color: AppTheme.accent, strokeWidth: 2)))
+            ? SizedBox(height: 180, child: Center(
+            child: CircularProgressIndicator(
+                color: AppTheme.accent, strokeWidth: 2)))
             : an.data.isEmpty
-                ? SizedBox(height: 180,
-                    child: Center(child: Text(s.chartLoading,
-                        style: TextStyle(color: c.textSecondary))))
-                : _BigChart(data: an.data),
+            ? SizedBox(height: 180, child: Center(
+            child: Text(s.chartLoading,
+                style: TextStyle(color: c.textSecondary))))
+            : _BigChart(data: an.data),
       ),
       const Gap(12),
 
-      // ── Stat cards ────────────────────────────────────────────────────────
-      if (an.data.isNotEmpty) _StatsGrid(data: an.data, toCode: to?.code ?? ''),
+      // ── Стат карточки ─────────────────────────────────────────────────────
+      if (an.data.isNotEmpty)
+        _StatsGrid(data: an.data),
       const Gap(12),
 
-      // ── Тренд / волатильность ─────────────────────────────────────────────
-      if (an.data.isNotEmpty) _InsightCard(data: an.data),
+      // ── Insights — только PRO ─────────────────────────────────────────────
+      if (an.data.isNotEmpty)
+        isPro
+            ? _InsightCard(data: an.data, s: s)
+            : _LockedInsights(onUnlock: () => PaywallScreen.show(context)),
     ]);
+  }
+}
+
+// ── Заблокированный блок Insights ────────────────────────────────────────────
+class _LockedInsights extends StatelessWidget {
+  final VoidCallback onUnlock;
+  const _LockedInsights({required this.onUnlock});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    return GestureDetector(
+      onTap: onUnlock,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.accent.withOpacity(0.3)),
+        ),
+        child: Row(children: [
+          Container(
+            width: 40, height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.accent.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(child: Icon(Icons.lock_rounded,
+                color: AppTheme.accent, size: 20)),
+          ),
+          const Gap(14),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Insights — PRO',
+                  style: TextStyle(fontSize: 14,
+                      fontWeight: FontWeight.w600, color: AppTheme.accent)),
+              const Gap(2),
+              Text('Trend, volatility & best time to exchange',
+                  style: TextStyle(fontSize: 12, color: c.textSecondary)),
+            ],
+          )),
+          const Icon(Icons.arrow_forward_ios_rounded,
+              size: 14, color: AppTheme.accent),
+        ]),
+      ),
+    );
   }
 }
 
@@ -143,43 +211,30 @@ class _BigChart extends StatelessWidget {
           show: true,
           horizontalInterval: (maxY - minY) / 4,
           getDrawingHorizontalLine: (_) => FlLine(
-            color: Colors.white.withOpacity(0.04), strokeWidth: 1),
+              color: Colors.white.withOpacity(0.04), strokeWidth: 1),
           drawVerticalLine: false,
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 52,
-              getTitlesWidget: (v, _) => Text(
-                _fmtRate(v),
-                style: TextStyle(
-                  fontSize: 9,
-                  color: Colors.white.withOpacity(0.35),
-                  fontFamily: 'monospace',
-                ),
-              ),
-            ),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: (data.length / 4).ceilToDouble(),
-              getTitlesWidget: (v, _) {
-                final i = v.toInt();
-                if (i < 0 || i >= data.length) return const SizedBox.shrink();
-                final daysAgo = data.length - 1 - i;
-                return Text(
-                  daysAgo == 0 ? 'now' : '-${daysAgo}d',
-                  style: TextStyle(
-                    fontSize: 9,
+          leftTitles: AxisTitles(sideTitles: SideTitles(
+            showTitles: true, reservedSize: 52,
+            getTitlesWidget: (v, _) => Text(_fmt(v),
+                style: TextStyle(fontSize: 9,
                     color: Colors.white.withOpacity(0.35),
-                  ),
-                );
-              },
-            ),
-          ),
+                    fontFamily: 'monospace')),
+          )),
+          bottomTitles: AxisTitles(sideTitles: SideTitles(
+            showTitles: true,
+            interval: (data.length / 4).ceilToDouble(),
+            getTitlesWidget: (v, _) {
+              final i = v.toInt();
+              if (i < 0 || i >= data.length) return const SizedBox.shrink();
+              final ago = data.length - 1 - i;
+              return Text(ago == 0 ? 'now' : '-${ago}d',
+                  style: TextStyle(fontSize: 9,
+                      color: Colors.white.withOpacity(0.35)));
+            },
+          )),
           rightTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false)),
           topTitles: const AxisTitles(
@@ -187,20 +242,18 @@ class _BigChart extends StatelessWidget {
         ),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipItems: (spots) => spots.map((s) =>
-              LineTooltipItem(_fmtRate(s.y),
-                const TextStyle(color: Colors.white, fontSize: 11,
-                    fontFamily: 'monospace', fontWeight: FontWeight.w600)),
-            ).toList(),
+            getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
+              _fmt(s.y),
+              const TextStyle(color: Colors.white, fontSize: 11,
+                  fontFamily: 'monospace', fontWeight: FontWeight.w600),
+            )).toList(),
           ),
         ),
         lineBarsData: [
           LineChartBarData(
             spots: spots,
-            isCurved: true,
-            curveSmoothness: 0.3,
-            color: AppTheme.accent,
-            barWidth: 2,
+            isCurved: true, curveSmoothness: 0.3,
+            color: AppTheme.accent, barWidth: 2,
             dotData: FlDotData(
               show: true,
               checkToShowDot: (s, _) => s.x == data.length - 1,
@@ -214,7 +267,7 @@ class _BigChart extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter, end: Alignment.bottomCenter,
                 colors: [AppTheme.accent.withOpacity(0.2),
-                         AppTheme.accent.withOpacity(0.0)],
+                  AppTheme.accent.withOpacity(0.0)],
               ),
             ),
           ),
@@ -223,7 +276,7 @@ class _BigChart extends StatelessWidget {
     );
   }
 
-  static String _fmtRate(double v) {
+  static String _fmt(double v) {
     if (v < 0.01)  return v.toStringAsFixed(5);
     if (v < 1)     return v.toStringAsFixed(4);
     if (v < 100)   return v.toStringAsFixed(3);
@@ -234,16 +287,15 @@ class _BigChart extends StatelessWidget {
 // ── Stat grid ─────────────────────────────────────────────────────────────────
 class _StatsGrid extends StatelessWidget {
   final List<double> data;
-  final String toCode;
-  const _StatsGrid({required this.data, required this.toCode});
+  const _StatsGrid({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final min   = data.reduce((a, b) => a < b ? a : b);
-    final max   = data.reduce((a, b) => a > b ? a : b);
-    final avg   = data.fold(0.0, (s, v) => s + v) / data.length;
-    final chg   = (data.last - data.first) / data.first * 100;
-    final isUp  = chg >= 0;
+    final min  = data.reduce((a, b) => a < b ? a : b);
+    final max  = data.reduce((a, b) => a > b ? a : b);
+    final avg  = data.fold(0.0, (s, v) => s + v) / data.length;
+    final chg  = (data.last - data.first) / data.first * 100;
+    final isUp = chg >= 0;
 
     return Row(children: [
       _StatCard(label: 'Min', value: _f(min), color: AppTheme.red),
@@ -272,25 +324,22 @@ class _StatCard extends StatelessWidget {
   final String label, value;
   final Color color;
   const _StatCard({required this.label, required this.value,
-      required this.color});
+    required this.color});
+
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: c.border),
-        ),
+        decoration: BoxDecoration(color: c.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.border)),
         child: Column(children: [
-          Text(label, style: TextStyle(
-              fontSize: 9, color: c.textSecondary,
+          Text(label, style: TextStyle(fontSize: 9, color: c.textSecondary,
               fontWeight: FontWeight.w600, letterSpacing: 0.05)),
           const Gap(4),
-          Text(value, style: TextStyle(
-              fontSize: 12, color: color,
+          Text(value, style: TextStyle(fontSize: 12, color: color,
               fontWeight: FontWeight.w700, fontFamily: 'monospace'),
               overflow: TextOverflow.ellipsis),
         ]),
@@ -299,68 +348,58 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ── Insight card ──────────────────────────────────────────────────────────────
+// ── Insights (PRO) ────────────────────────────────────────────────────────────
 class _InsightCard extends StatelessWidget {
   final List<double> data;
-  const _InsightCard({required this.data});
+  final dynamic s;
+  const _InsightCard({required this.data, required this.s});
 
   @override
   Widget build(BuildContext context) {
-    final c   = context.appColors;
-    final chg = (data.last - data.first) / data.first * 100;
+    final c    = context.appColors;
+    final chg  = (data.last - data.first) / data.first * 100;
     final isUp = chg >= 0;
-
-    // Волатильность = среднее отклонение от среднего
     final avg  = data.fold(0.0, (s, v) => s + v) / data.length;
-    final vol  = data.map((v) => (v - avg).abs()).fold(0.0, (s, v) => s + v)
-                 / data.length / avg * 100;
-    final volLabel = vol < 0.5 ? 'Low 🟢' : vol < 1.5 ? 'Medium 🟡' : 'High 🔴';
+    final vol  = data.map((v) => (v - avg).abs())
+        .fold(0.0, (s, v) => s + v)
+        / data.length / avg * 100;
+    final volLabel = vol < 0.5
+        ? 'Low 🟢' : vol < 1.5 ? 'Medium 🟡' : 'High 🔴';
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border),
-      ),
+      decoration: BoxDecoration(color: c.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.border)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Insights', style: TextStyle(
-            fontSize: 12, fontWeight: FontWeight.w600,
-            color: c.textSecondary, letterSpacing: 0.08)),
+        Text(s.insights, style: TextStyle(fontSize: 12,
+            fontWeight: FontWeight.w600, color: c.textSecondary,
+            letterSpacing: 0.08)),
         const Gap(10),
-        _InsightRow(
-          icon: isUp ? '📈' : '📉',
-          label: 'Trend',
-          value: isUp
-              ? 'Rising +${chg.abs().toStringAsFixed(2)}%'
-              : 'Falling −${chg.abs().toStringAsFixed(2)}%',
-          color: isUp ? AppTheme.green : AppTheme.red,
-        ),
+        _Row(icon: isUp ? '📈' : '📉', label: s.trend,
+            value: isUp
+                ? 'Rising +${chg.abs().toStringAsFixed(2)}%'
+                : 'Falling −${chg.abs().toStringAsFixed(2)}%',
+            color: isUp ? AppTheme.green : AppTheme.red),
         const Gap(8),
-        _InsightRow(
-          icon: '〰️',
-          label: 'Volatility',
-          value: volLabel,
-          color: c.textPrimary,
-        ),
+        _Row(icon: '〰️', label: s.volatility,
+            value: volLabel, color: c.textPrimary),
         const Gap(8),
-        _InsightRow(
-          icon: '🕐',
-          label: 'Best time to exchange',
-          value: isUp ? 'Exchange now' : 'Consider waiting',
-          color: isUp ? AppTheme.green : AppTheme.amber,
-        ),
+        _Row(icon: '🕐', label: s.bestTime,
+            value: isUp ? s.exchangeNow : s.considerWaiting,
+            color: isUp ? AppTheme.green : AppTheme.amber),
       ]),
     );
   }
 }
 
-class _InsightRow extends StatelessWidget {
+class _Row extends StatelessWidget {
   final String icon, label, value;
   final Color color;
-  const _InsightRow({required this.icon, required this.label,
-      required this.value, required this.color});
+  const _Row({required this.icon, required this.label,
+    required this.value, required this.color});
+
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
@@ -369,8 +408,8 @@ class _InsightRow extends StatelessWidget {
       const Gap(10),
       Expanded(child: Text(label,
           style: TextStyle(fontSize: 13, color: c.textSecondary))),
-      Text(value, style: TextStyle(
-          fontSize: 13, fontWeight: FontWeight.w600, color: color)),
+      Text(value, style: TextStyle(fontSize: 13,
+          fontWeight: FontWeight.w600, color: color)),
     ]);
   }
 }

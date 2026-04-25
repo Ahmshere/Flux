@@ -5,7 +5,7 @@ import 'package:gap/gap.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/l10n/lang_provider.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../main.dart';
+import '../../../../core/theme/theme_provider.dart';
 
 class SettingsSheet extends ConsumerWidget {
   const SettingsSheet({super.key});
@@ -21,10 +21,10 @@ class SettingsSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c    = context.appColors;
-    final s    = ref.watch(stringsProvider);
+    final c      = context.appColors;
+    final s      = ref.watch(stringsProvider);
     final isDark = context.isDark;
-    final lang = ref.watch(langProvider);
+    final lang   = ref.watch(langProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -64,14 +64,16 @@ class SettingsSheet extends ConsumerWidget {
             _Seg(
               label: '🌙  ${s.themeDark}',
               active: isDark,
-              onTap: () => ref.read(themeModeProvider.notifier).state =
-                  ThemeMode.dark,
+              onTap: () => ref
+                  .read(themeModeProvider.notifier)
+                  .setMode(ThemeMode.dark),
             ),
             _Seg(
               label: '☀️  ${s.themeLight}',
               active: !isDark,
-              onTap: () => ref.read(themeModeProvider.notifier).state =
-                  ThemeMode.light,
+              onTap: () => ref
+                  .read(themeModeProvider.notifier)
+                  .setMode(ThemeMode.light),
             ),
           ]),
           const Gap(24),
@@ -102,10 +104,8 @@ class SettingsSheet extends ConsumerWidget {
           const Gap(28),
 
           Center(
-            child: Text(
-              'Kurso PRO  v1.0.0',
-              style: TextStyle(fontSize: 12, color: c.textSecondary),
-            ),
+            child: Text('Flux PRO  v1.0.0',
+              style: TextStyle(fontSize: 12, color: c.textSecondary)),
           ),
         ],
       ),
@@ -117,11 +117,10 @@ class _Label extends StatelessWidget {
   final String text;
   const _Label(this.text);
   @override
-  Widget build(BuildContext context) => Text(text,
-      style: TextStyle(
-        fontSize: 11, fontWeight: FontWeight.w600,
-        color: context.appColors.textSecondary, letterSpacing: 0.08,
-      ));
+  Widget build(BuildContext context) => Text(text, style: TextStyle(
+    fontSize: 11, fontWeight: FontWeight.w600,
+    color: context.appColors.textSecondary, letterSpacing: 0.08,
+  ));
 }
 
 class _Seg {
@@ -161,8 +160,7 @@ class _SegmentRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13, fontWeight: FontWeight.w600,
                   color: item.active ? Colors.white : c.textSecondary,
-                ),
-              ),
+                )),
             ),
           ),
         )).toList(),
