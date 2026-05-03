@@ -8,17 +8,28 @@ G:.
 │   ├───constants
 │   │       app_constants.dart
 │   │       
+│   ├───l10n
+│   │       app_strings.dart
+│   │       lang_provider.dart
+│   │       
 │   ├───network
 │   │       api_client.dart
 │   │       
 │   ├───nlp
 │   │       natural_parser.dart
 │   │       
-│   ├───proveders
+│   ├───pro
+│   │       pro_provider.dart
+│   │       
+│   ├───providers
 │   │       app_providers.dart
 │   │       
-│   └───theme
-│           app_theme.dart
+│   ├───theme
+│   │       app_theme.dart
+│   │       theme_provider.dart
+│   │       
+│   └───widget
+│           home_widget_service.dart
 │           
 └───features
     └───currency
@@ -30,6 +41,8 @@ G:.
         │   │       remote_datasource.dart
         │   │       
         │   └───models
+        │           history_model.dart
+        │           history_model.g.dart
         │           rates_model.dart
         │           rates_model.g.dart
         │           
@@ -45,16 +58,27 @@ G:.
         │           
         └───presentation
             ├───screens
+            │       analytics_screen.dart
+            │       favorites_screen.dart
+            │       history_screen.dart
             │       home_screen.dart
+            │       paywall_screen.dart
+            │       splash_screen.dart
             │       
             ├───state
+            │       analytics_notifier.dart
             │       currency_notifier.dart
+            │       favorites_notifier.dart
+            │       history_notifier.dart
             │       
             └───widgets
+                    animated_number.dart
                     converter_card.dart
                     error_view.dart
                     mini_chart.dart
+                    multi_converter.dart
                     natural_input_widget.dart
                     quick_amounts.dart
                     rate_info_bar.dart
+                    settings_sheet.dart
                     

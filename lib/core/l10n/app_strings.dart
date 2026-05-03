@@ -4,7 +4,7 @@ class S {
   final AppLang lang;
   const S(this.lang);
 
-  String get appName => 'Flux';
+  String get appName => 'Kurso';
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   String get tabConverter => switch (lang) {
@@ -136,6 +136,65 @@ class S {
     AppLang.en => 'Language',
     AppLang.de => 'Sprache',
     AppLang.ru => 'Язык',
+  };
+
+  // ── Bank rate ─────────────────────────────────────────────────────────────
+  String get inBank => switch (lang) {
+    AppLang.en => 'in banks (+2–5%)',
+    AppLang.de => 'bei Banken (+2–5%)',
+    AppLang.ru => 'в банках (+2–5%)',
+  };
+  String get bankRateTitle => switch (lang) {
+    AppLang.en => 'Bank rate vs ECB rate',
+    AppLang.de => 'Bankkurs vs. EZB-Kurs',
+    AppLang.ru => 'Банковский курс vs ЕЦБ',
+  };
+  String get bankRateExplanation => switch (lang) {
+    AppLang.en =>
+    'Flux shows the European Central Bank (ECB) reference rate — '
+        'the "fair" mid-market rate used between banks.\n\n'
+        'When you exchange money at a bank or currency office, '
+        'they add a margin of typically 2–5% on top of this rate. '
+        'That\'s how they make money.\n\n'
+        'The range shown (≈ +2–5%) gives you a realistic idea '
+        'of what you\'ll actually pay.',
+    AppLang.de =>
+    'Flux zeigt den Referenzkurs der Europäischen Zentralbank (EZB) — '
+        'den "fairen" Mittelkurs zwischen Banken.\n\n'
+        'Beim Geldwechsel in einer Bank oder Wechselstube wird '
+        'eine Marge von typischerweise 2–5% aufgeschlagen. '
+        'So verdienen sie ihr Geld.\n\n'
+        'Der angezeigte Bereich (≈ +2–5%) gibt dir eine realistische '
+        'Vorstellung davon, was du tatsächlich zahlst.',
+    AppLang.ru =>
+    'Flux показывает справочный курс Европейского Центрального Банка (ЕЦБ) — '
+        '"справедливый" межбанковский курс.\n\n'
+        'Когда вы меняете деньги в банке или обменнике, '
+        'они добавляют свою маржу — обычно 2–5% сверху. '
+        'Так они зарабатывают.\n\n'
+        'Диапазон (≈ +2–5%) даёт реалистичное представление '
+        'о том, сколько вы реально заплатите.',
+  };
+  String get ecbSource => switch (lang) {
+    AppLang.en => 'ECB reference rate · frankfurter.app',
+    AppLang.de => 'EZB-Referenzkurs · frankfurter.app',
+    AppLang.ru => 'Справочный курс ЕЦБ · frankfurter.app',
+  };
+
+  // ── Disclaimer ────────────────────────────────────────────────────────────
+  String get disclaimer => switch (lang) {
+    AppLang.en =>
+    'Rates are for informational purposes only. '
+        'Based on ECB reference data via frankfurter.app. '
+        'May differ from bank or exchange office rates.',
+    AppLang.de =>
+    'Kurse dienen nur zu Informationszwecken. '
+        'Basierend auf EZB-Referenzdaten über frankfurter.app. '
+        'Können von Bank- oder Wechselkursen abweichen.',
+    AppLang.ru =>
+    'Курсы предоставляются только в информационных целях. '
+        'Данные ЕЦБ через frankfurter.app. '
+        'Могут отличаться от курсов банков и обменников.',
   };
 
   // ── Favorites ─────────────────────────────────────────────────────────────

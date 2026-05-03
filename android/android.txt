@@ -1,0 +1,163 @@
+Folder PATH listing for volume NEW_ONE
+Volume serial number is AE88-B552
+G:.
+│   .gitignore
+│   android.txt
+│   build.gradle.kts
+│   cur_converter_android.iml
+│   gradle.properties
+│   gradlew
+│   gradlew.bat
+│   key.properties
+│   local.properties
+│   settings.gradle.kts
+│   
+├───.gradle
+│   │   file-system.probe
+│   │   
+│   ├───8.14
+│   │   │   gc.properties
+│   │   │   
+│   │   ├───checksums
+│   │   │       checksums.lock
+│   │   │       md5-checksums.bin
+│   │   │       sha1-checksums.bin
+│   │   │       
+│   │   ├───executionHistory
+│   │   │       executionHistory.bin
+│   │   │       executionHistory.lock
+│   │   │       
+│   │   ├───expanded
+│   │   ├───fileChanges
+│   │   │       last-build.bin
+│   │   │       
+│   │   ├───fileHashes
+│   │   │       fileHashes.bin
+│   │   │       fileHashes.lock
+│   │   │       resourceHashesCache.bin
+│   │   │       
+│   │   └───vcsMetadata
+│   ├───buildOutputCleanup
+│   │       buildOutputCleanup.lock
+│   │       cache.properties
+│   │       outputFiles.bin
+│   │       
+│   ├───kotlin
+│   │   └───errors
+│   │           errors-1777065932920.log
+│   │           errors-1777118792588.log
+│   │           errors-1777127426397.log
+│   │           errors-1777130944920.log
+│   │           errors-1777208153259.log
+│   │           errors-1777208153312.log
+│   │           errors-1777664988312.log
+│   │           
+│   ├───noVersion
+│   │       buildLogic.lock
+│   │       
+│   └───vcs-1
+│           gc.properties
+│           
+├───.kotlin
+│   ├───errors
+│   │       errors-1777065932920.log
+│   │       errors-1777118792588.log
+│   │       errors-1777127426397.log
+│   │       errors-1777130944920.log
+│   │       errors-1777208153259.log
+│   │       errors-1777208153312.log
+│   │       errors-1777664988312.log
+│   │       
+│   └───sessions
+├───app
+│   │   build.gradle.kts
+│   │   
+│   └───src
+│       ├───debug
+│       │       AndroidManifest.xml
+│       │       
+│       ├───main
+│       │   │   AndroidManifest.xml
+│       │   │   
+│       │   ├───java
+│       │   │   ├───com
+│       │   │   │   └───converter
+│       │   │   │       └───whitefox
+│       │   │   │           └───cur_converter
+│       │   │   │                   MainActivity.java
+│       │   │   │                   
+│       │   │   └───io
+│       │   │       └───flutter
+│       │   │           └───plugins
+│       │   │                   GeneratedPluginRegistrant.java
+│       │   │                   
+│       │   ├───kotlin
+│       │   │   └───com
+│       │   │       └───converter
+│       │   │           └───whitefox
+│       │   │               └───cur_converter
+│       │   │                       FluxRateWidget.kt
+│       │   │                       
+│       │   └───res
+│       │       ├───drawable
+│       │       │       launch_background.xml
+│       │       │       widget_background.xml
+│       │       │       
+│       │       ├───drawable-hdpi
+│       │       │       ic_launcher_foreground.png
+│       │       │       
+│       │       ├───drawable-mdpi
+│       │       │       ic_launcher_foreground.png
+│       │       │       
+│       │       ├───drawable-v21
+│       │       │       launch_background.xml
+│       │       │       
+│       │       ├───drawable-xhdpi
+│       │       │       ic_launcher_foreground.png
+│       │       │       
+│       │       ├───drawable-xxhdpi
+│       │       │       ic_launcher_foreground.png
+│       │       │       
+│       │       ├───drawable-xxxhdpi
+│       │       │       ic_launcher_foreground.png
+│       │       │       
+│       │       ├───layout
+│       │       │       flux_rate_widget.xml
+│       │       │       
+│       │       ├───mipmap-anydpi-v26
+│       │       │       ic_launcher.xml
+│       │       │       
+│       │       ├───mipmap-hdpi
+│       │       │       ic_launcher.png
+│       │       │       
+│       │       ├───mipmap-mdpi
+│       │       │       ic_launcher.png
+│       │       │       
+│       │       ├───mipmap-xhdpi
+│       │       │       ic_launcher.png
+│       │       │       
+│       │       ├───mipmap-xxhdpi
+│       │       │       ic_launcher.png
+│       │       │       
+│       │       ├───mipmap-xxxhdpi
+│       │       │       ic_launcher.png
+│       │       │       
+│       │       ├───values
+│       │       │       colors.xml
+│       │       │       strings.xml
+│       │       │       styles.xml
+│       │       │       
+│       │       ├───values-night
+│       │       │       styles.xml
+│       │       │       
+│       │       └───xml
+│       │               flux_rate_widget_info.xml
+│       │               
+│       └───profile
+│               AndroidManifest.xml
+│               
+└───gradle
+    └───wrapper
+            gradle-wrapper.jar
+            gradle-wrapper.properties
+            

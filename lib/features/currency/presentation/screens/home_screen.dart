@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../core/l10n/app_strings.dart';
-import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/l10n/lang_provider.dart';
 import '../state/currency_notifier.dart';
 import '../widgets/natural_input_widget.dart';
@@ -15,8 +15,10 @@ import '../widgets/mini_chart.dart';
 import '../widgets/quick_amounts.dart';
 import '../widgets/error_view.dart';
 import '../widgets/settings_sheet.dart';
+import '../widgets/multi_converter.dart';
 import 'analytics_screen.dart';
 import 'favorites_screen.dart';
+import 'history_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -50,12 +52,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             : Column(children: [
                 const _Header(),
                 if (state.error != null && state.rates.isEmpty)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ErrorView(message: state.error!),
-                    ),
-                  )
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ErrorView(message: state.error!),
+                  ))
                 else
                   Expanded(child: _buildBody(c, state, s)),
               ]),
@@ -75,7 +75,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(children: [
               const Gap(8),
-              _Tabs(selected: _tab, onChanged: (i) => setState(() => _tab = i)),
+              _Tabs(selected: _tab,
+                  onChanged: (i) => setState(() => _tab = i)),
               const Gap(12),
               if (_tab == 0) _converterTab(),
               if (_tab == 1) const AnalyticsTab(),
@@ -93,7 +94,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     QuickAmounts(),       Gap(12),
     ConverterCard(),      Gap(12),
     RateInfoBar(),        Gap(12),
-    MiniChart(),
+    MiniChart(),          Gap(12),
+    // ── Мульти-конвертер ────────────────────────────────
+    MultiConverter(),
+    Gap(12),
   ]);
 }
 
@@ -143,8 +147,8 @@ class _Header extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(children: [
         Text('Flux', style: TextStyle(fontSize: 20,
-            fontWeight: FontWeight.w700, color: c.textPrimary,
-            letterSpacing: -0.5)),
+            fontWeight: FontWeight.w700,
+            color: c.textPrimary, letterSpacing: -0.5)),
         const Gap(6),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -154,9 +158,18 @@ class _Header extends ConsumerWidget {
             borderRadius: BorderRadius.circular(4),
           ),
           child: const Text('PRO', style: TextStyle(color: Colors.white,
-              fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+              fontSize: 10, fontWeight: FontWeight.w700,
+              letterSpacing: 0.5)),
         ),
         const Spacer(),
+        // История
+        _IconBtn(
+          onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const HistoryScreen())),
+          child: const Text('🕐', style: TextStyle(fontSize: 16)),
+        ),
+        const Gap(6),
+        // Обновить
         _IconBtn(
           onTap: isRefreshing ? null : () async {
             HapticFeedback.lightImpact();
@@ -169,6 +182,7 @@ class _Header extends ConsumerWidget {
               : const Text('↻', style: TextStyle(fontSize: 18)),
         ),
         const Gap(6),
+        // Настройки
         _IconBtn(
           onTap: () => SettingsSheet.show(context),
           child: const Text('⚙️', style: TextStyle(fontSize: 16)),
@@ -232,7 +246,8 @@ class _Tabs extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(labels[i], textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                  style: TextStyle(fontSize: 13,
+                      fontWeight: FontWeight.w600,
                       color: active ? Colors.white : c.textSecondary)),
               ),
             ),

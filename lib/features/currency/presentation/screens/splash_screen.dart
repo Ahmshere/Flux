@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import 'home_screen.dart';
+import 'onboarding_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -21,11 +22,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigate() async {
+    // Ждём анимацию
     await Future.delayed(const Duration(milliseconds: 1800));
+    if (!mounted) return;
+
+    // Проверяем первый ли это запуск
+    final showOnboarding = await shouldShowOnboarding();
+
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const HomeScreen(),
+        pageBuilder: (_, __, ___) => showOnboarding
+            ? const OnboardingScreen()
+            : const HomeScreen(),
         transitionsBuilder: (_, anim, __, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: const Duration(milliseconds: 400),
@@ -41,7 +50,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── Иконка из assets ────────────────────────────────────────────
+            // Иконка
             Container(
               width: 96, height: 96,
               decoration: BoxDecoration(
@@ -65,18 +74,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             )
                 .animate()
                 .scale(
-                  duration: 500.ms,
-                  curve: Curves.easeOutBack,
-                  begin: const Offset(0.5, 0.5),
-                  end: const Offset(1, 1),
-                )
+              duration: 500.ms,
+              curve: Curves.easeOutBack,
+              begin: const Offset(0.5, 0.5),
+              end: const Offset(1, 1),
+            )
                 .fadeIn(duration: 400.ms),
 
             const Gap(24),
 
-            // ── Название ────────────────────────────────────────────────────
-            const Text(
-              'Flux',
+            const Text('Flux',
               style: TextStyle(
                 fontSize: 36, fontWeight: FontWeight.w800,
                 color: Colors.white, letterSpacing: -1,
@@ -84,27 +91,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             )
                 .animate()
                 .fadeIn(delay: 300.ms, duration: 400.ms)
-                .slideY(
-                  begin: 0.3, end: 0,
-                  delay: 300.ms, duration: 400.ms,
-                  curve: Curves.easeOut,
-                ),
+                .slideY(begin: 0.3, end: 0,
+                delay: 300.ms, duration: 400.ms,
+                curve: Curves.easeOut),
 
             const Gap(8),
 
-            Text(
-              'Smart Currency Converter',
+            Text('Smart Currency Converter',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.white.withOpacity(0.45),
                 fontWeight: FontWeight.w400,
-                letterSpacing: 0.2,
               ),
             ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
 
             const Gap(60),
 
-            // ── Прогресс-бар ────────────────────────────────────────────────
             SizedBox(
               width: 32, height: 2,
               child: LinearProgressIndicator(

@@ -9,35 +9,32 @@ import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/rate.dart';
 import '../state/currency_notifier.dart';
 import '../screens/paywall_screen.dart';
+import 'animated_number.dart';
 
-// Топ-8 бесплатных валют  test_oPVXzmzVqImZbMEccENSLvuVwkT
-const _freeCodesLimit = 8;
-const _freeCodes = [
-  'USD', 'EUR', 'GBP', 'JPY', 'ILS', 'CHF', 'CAD', 'AUD'
-];
+const _freeCodes = ['USD', 'EUR', 'GBP', 'JPY', 'ILS', 'CHF', 'CAD', 'AUD'];
 
 class ConverterCard extends ConsumerWidget {
   const ConverterCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c     = context.appColors;
-    final state = ref.watch(currencyProvider);
-    final isPro = ref.watch(proProvider);
-
-    // Фильтруем валюты по PRO статусу
-    final visibleRates = isPro
+    final c      = context.appColors;
+    final state  = ref.watch(currencyProvider);
+    final isPro  = ref.watch(proProvider);
+    final rates  = isPro
         ? state.rates
         : state.rates.where((r) => _freeCodes.contains(r.code)).toList();
 
     return Container(
-      decoration: BoxDecoration(color: c.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: c.border)),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: c.border),
+      ),
       child: Column(children: [
         _CurrencyRow(
           rate: state.fromRate,
-          allRates: visibleRates,
+          allRates: rates,
           isFrom: true,
           amount: state.amount,
           isPro: isPro,
@@ -55,22 +52,19 @@ class ConverterCard extends ConsumerWidget {
         ]),
         _CurrencyRow(
           rate: state.toRate,
-          allRates: visibleRates,
+          allRates: rates,
           isFrom: false,
           amount: state.result?.result,
           isPro: isPro,
           onRateChanged: (r) =>
               ref.read(currencyProvider.notifier).setToRate(r),
         ),
-        // Плашка "PRO — unlock more currencies"
-        if (!isPro)
-          _UnlockMoreCurrencies(),
+        if (!isPro) _UnlockMoreCurrencies(),
       ]),
     );
   }
 }
 
-// ── Плашка разблокировки ──────────────────────────────────────────────────────
 class _UnlockMoreCurrencies extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,19 +81,17 @@ class _UnlockMoreCurrencies extends ConsumerWidget {
           border: Border(top: BorderSide(color: c.border)),
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.lock_rounded,
-              size: 13, color: AppTheme.accent),
+          const Icon(Icons.lock_rounded, size: 13, color: AppTheme.accent),
           const Gap(6),
-          Text('PRO — unlock CNY, AED, RUB, BTC, ETH',
-              style: const TextStyle(fontSize: 12,
-                  color: AppTheme.accent, fontWeight: FontWeight.w500)),
+          const Text('PRO — unlock CNY, AED, RUB, BTC, ETH',
+            style: TextStyle(fontSize: 12,
+                color: AppTheme.accent, fontWeight: FontWeight.w500)),
         ]),
       ),
     );
   }
 }
 
-// ── Строка валюты ─────────────────────────────────────────────────────────────
 class _CurrencyRow extends ConsumerWidget {
   final Rate? rate;
   final List<Rate> allRates;
@@ -122,7 +114,6 @@ class _CurrencyRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.appColors;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(children: [
@@ -159,7 +150,7 @@ class _CurrencyRow extends ConsumerWidget {
               ),
               const Gap(2),
               Text(rate?.name ?? '',
-                  style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                style: TextStyle(fontSize: 11, color: c.textSecondary)),
             ],
           ),
         ),
@@ -167,7 +158,9 @@ class _CurrencyRow extends ConsumerWidget {
         SizedBox(
           width: 130,
           child: isFrom
-              ? _AmountInput(amount: amount ?? 0, onChanged: onAmountChanged)
+              ? _AmountInput(
+                  amount: amount ?? 0,
+                  onChanged: onAmountChanged)
               : _AmountResult(amount: amount),
         ),
       ]),
@@ -222,8 +215,8 @@ class _AmountInputState extends State<_AmountInput> {
             color: _focused ? AppTheme.accent : c.textPrimary,
             fontFamily: 'monospace'),
         decoration: const InputDecoration(
-            border: InputBorder.none, isDense: true,
-            contentPadding: EdgeInsets.zero),
+          border: InputBorder.none, isDense: true,
+          contentPadding: EdgeInsets.zero),
         onChanged: (v) {
           final n = double.tryParse(v.replaceAll(',', '.'));
           if (n != null && n > 0) widget.onChanged?.call(n);
@@ -233,12 +226,12 @@ class _AmountInputState extends State<_AmountInput> {
   }
 }
 
-// ── Результат (TO) ────────────────────────────────────────────────────────────
+// ── Результат с анимацией (TO) ────────────────────────────────────────────────
 class _AmountResult extends ConsumerWidget {
   final double? amount;
   const _AmountResult({this.amount});
 
-  String _fmt(double v) {
+  static String _fmt(double v) {
     if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(2)}M';
     if (v < 0.001)    return v.toStringAsFixed(8);
     if (v < 1)        return v.toStringAsFixed(4);
@@ -247,15 +240,19 @@ class _AmountResult extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c    = context.appColors;
-    final s    = ref.watch(stringsProvider);
-    final text = amount != null ? _fmt(amount!) : '—';
+    final c = context.appColors;
+    final s = ref.watch(stringsProvider);
+
+    if (amount == null) {
+      return Text('—', textAlign: TextAlign.right,
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600,
+            color: c.textPrimary, fontFamily: 'monospace'));
+    }
 
     return GestureDetector(
       onTap: () {
-        if (amount == null) return;
         HapticFeedback.lightImpact();
-        Clipboard.setData(ClipboardData(text: text));
+        Clipboard.setData(ClipboardData(text: _fmt(amount!)));
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.copiedToClipboard),
           duration: const Duration(seconds: 1),
@@ -266,22 +263,26 @@ class _AmountResult extends ConsumerWidget {
         ));
       },
       child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        Text(text, textAlign: TextAlign.right,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600,
-                color: c.textPrimary, fontFamily: 'monospace')),
-        if (amount != null)
-          Text(s.tapToCopy,
-              style: TextStyle(fontSize: 9, color: c.textSecondary)),
+        // ── Анимированное число ───────────────────────────────────────────
+        AnimatedNumber(
+          value: amount!,
+          formatter: _fmt,
+          style: TextStyle(
+            fontSize: 22, fontWeight: FontWeight.w600,
+            color: c.textPrimary, fontFamily: 'monospace',
+          ),
+        ),
+        Text(s.tapToCopy,
+          style: TextStyle(fontSize: 9, color: c.textSecondary)),
       ]),
     );
   }
 }
 
-// ── Swap кнопка ───────────────────────────────────────────────────────────────
+// ── Swap ──────────────────────────────────────────────────────────────────────
 class _SwapButton extends StatefulWidget {
   final VoidCallback onTap;
   const _SwapButton({required this.onTap});
-
   @override
   State<_SwapButton> createState() => _SwapButtonState();
 }
@@ -289,17 +290,14 @@ class _SwapButton extends StatefulWidget {
 class _SwapButtonState extends State<_SwapButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
-
   @override
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this,
         duration: const Duration(milliseconds: 300));
   }
-
   @override
   void dispose() { _ctrl.dispose(); super.dispose(); }
-
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
@@ -309,7 +307,8 @@ class _SwapButtonState extends State<_SwapButton>
         turns: _ctrl,
         child: Container(
           width: 32, height: 32,
-          decoration: BoxDecoration(color: c.surface, shape: BoxShape.circle,
+          decoration: BoxDecoration(color: c.surface,
+              shape: BoxShape.circle,
               border: Border.all(color: c.border, width: 1.5)),
           child: const Center(
               child: Text('⇅', style: TextStyle(fontSize: 15))),

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_background"
+        android:padding="12dp">
+
+    <!-- Логотип вверху слева -->
+    <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="Flux"
+            android:textColor="#7C6AF7"
+            android:textSize="10sp"
+            android:textStyle="bold"/>
+
+    <!-- Время вверху справа -->
+    <TextView
+            android:id="@+id/widget_updated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:text="--:--"
+            android:textColor="#55FFFFFF"
+            android:textSize="10sp"/>
+
+    <!-- Центральный блок конвертации -->
+    <LinearLayout
+            android:id="@+id/widget_center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/widget_title"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical">
+
+        <!-- FROM -->
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+            <TextView
+                    android:id="@+id/widget_from_flag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🇺🇸"
+                    android:textSize="15sp"/>
+
+            <TextView
+                    android:id="@+id/widget_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="100 USD"
+                    android:textColor="#DDFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="5dp"/>
+        </LinearLayout>
+
+        <!-- Стрелка -->
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="↓"
+                android:textColor="#337C6AF7"
+                android:textSize="10sp"
+                android:layout_marginStart="2dp"/>
+
+        <!-- TO -->
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+            <TextView
+                    android:id="@+id/widget_to_flag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🇪🇺"
+                    android:textSize="15sp"/>
+
+            <TextView
+                    android:id="@+id/widget_result"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="92.38 EUR"
+                    android:textColor="#7C6AF7"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="5dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Банковский диапазон — посередине снизу -->
+    <TextView
+            android:id="@+id/widget_bank_rate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/widget_rate"
+            android:layout_marginBottom="2dp"
+            android:text="🏦 ≈ 0.94–0.97 EUR in banks"
+            android:textColor="#CCFBBF24"
+            android:textSize="9sp"/>
+
+    <!-- Справочный курс внизу -->
+    <TextView
+            android:id="@+id/widget_rate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="ECB: 1 USD = 0.9238 EUR"
+            android:textColor="#44FFFFFF"
+            android:textSize="9sp"/>
+
+</RelativeLayout>
