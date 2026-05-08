@@ -208,6 +208,28 @@ class S {
     AppLang.de => 'Gehe zum Rechner und speichere deine Lieblingspaare',
     AppLang.ru => 'Перейдите в конвертер и сохраните пары',
   };
+  // ── PRO currencies hint ───────────────────────────────────────────────────
+  String get proUnlockCurrencies => switch (lang) {
+    AppLang.en =>
+    'PRO unlocks 25+ currencies:\n'
+        'JPY · CHF · CAD · AUD · CNY · HKD · SGD\n'
+        'NOK · SEK · DKK · PLN · CZK · HUF · RON\n'
+        'TRY · ZAR · BRL · MXN · KRW · IDR · MYR\n'
+        'PHP · THB · NZD · AED · BTC · ETH',
+    AppLang.de =>
+    'PRO schaltet 25+ Währungen frei:\n'
+        'JPY · CHF · CAD · AUD · CNY · HKD · SGD\n'
+        'NOK · SEK · DKK · PLN · CZK · HUF · RON\n'
+        'TRY · ZAR · BRL · MXN · KRW · IDR · MYR\n'
+        'PHP · THB · NZD · AED · BTC · ETH',
+    AppLang.ru =>
+    'PRO открывает 25+ валют:\n'
+        'JPY · CHF · CAD · AUD · CNY · HKD · SGD\n'
+        'NOK · SEK · DKK · PLN · CZK · HUF · RON\n'
+        'TRY · ZAR · BRL · MXN · KRW · IDR · MYR\n'
+        'PHP · THB · NZD · AED · BTC · ETH',
+  };
+
   String get savePair => switch (lang) {
     AppLang.en => 'Save pair',
     AppLang.de => 'Paar speichern',

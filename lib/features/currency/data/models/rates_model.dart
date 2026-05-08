@@ -6,10 +6,10 @@ part 'rates_model.g.dart';
 @HiveType(typeId: 0)
 class RatesModel extends HiveObject {
   @HiveField(0)
-  final Map<String, double> rates; // code → rateToUsd
+  final Map<String, double> rates;
 
   @HiveField(1)
-  final int timestamp; // Unix ms — когда закешировали
+  final int timestamp;
 
   RatesModel({required this.rates, required this.timestamp});
 
@@ -18,22 +18,25 @@ class RatesModel extends HiveObject {
     return (now - timestamp) < const Duration(hours: 12).inMilliseconds;
   }
 
-  /// Преобразуем в список сущностей Rate, используя справочник метаданных
   List<Rate> toRates() {
     return rates.entries
         .where((e) => _meta.containsKey(e.key))
         .map((e) {
-          final m = _meta[e.key]!;
-          return Rate(
-            code: e.key,
-            name: m.name,
-            symbol: m.symbol,
-            flag: m.flag,
-            rateToUsd: e.value,
-          );
-        })
+      final m = _meta[e.key]!;
+      return Rate(
+        code: e.key,
+        name: m.name,
+        symbol: m.symbol,
+        flag: m.flag,
+        rateToUsd: e.value,
+      );
+    })
         .toList()
-      ..sort((a, b) => _order.indexOf(a.code).compareTo(_order.indexOf(b.code)));
+      ..sort((a, b) {
+        final ai = _order.indexOf(a.code);
+        final bi = _order.indexOf(b.code);
+        return (ai < 0 ? 999 : ai).compareTo(bi < 0 ? 999 : bi);
+      });
   }
 
   factory RatesModel.fromJson(Map<String, dynamic> json) {
@@ -45,10 +48,18 @@ class RatesModel extends HiveObject {
   }
 }
 
-/// Порядок отображения валют
+/// Порядок отображения — сначала бесплатные, потом PRO
 const _order = [
-  'USD', 'EUR', 'ILS', 'GBP', 'JPY', 'CHF', 'CAD',
-  'AUD', 'CNY', 'AED', 'RUB', 'BTC', 'ETH',
+  // ── Бесплатные (5) ──────────────────────────────────────────────────────
+  'USD', 'EUR', 'GBP', 'ILS', 'INR',
+  // ── PRO ─────────────────────────────────────────────────────────────────
+  'JPY', 'CHF', 'CAD', 'AUD', 'CNY',
+  'HKD', 'SGD', 'NOK', 'SEK', 'DKK',
+  'PLN', 'CZK', 'HUF', 'RON', 'TRY',
+  'ZAR', 'BRL', 'MXN', 'IDR', 'KRW',
+  'MYR', 'PHP', 'THB', 'NZD', 'AED',
+  // ── Крипто (PRO) ────────────────────────────────────────────────────────
+  'BTC', 'ETH',
 ];
 
 class _CurrencyMeta {
@@ -59,17 +70,42 @@ class _CurrencyMeta {
 }
 
 const _meta = {
-  'USD': _CurrencyMeta('US Dollar',         '\$',  '🇺🇸'),
-  'EUR': _CurrencyMeta('Euro',               '€',  '🇪🇺'),
-  'ILS': _CurrencyMeta('Israeli Shekel',     '₪',  '🇮🇱'),
-  'GBP': _CurrencyMeta('British Pound',      '£',  '🇬🇧'),
-  'JPY': _CurrencyMeta('Japanese Yen',       '¥',  '🇯🇵'),
-  'CHF': _CurrencyMeta('Swiss Franc',        'Fr', '🇨🇭'),
-  'CAD': _CurrencyMeta('Canadian Dollar',    'C\$','🇨🇦'),
-  'AUD': _CurrencyMeta('Australian Dollar',  'A\$','🇦🇺'),
-  'CNY': _CurrencyMeta('Chinese Yuan',       '¥',  '🇨🇳'),
-  'AED': _CurrencyMeta('UAE Dirham',         'د.إ','🇦🇪'),
-  'RUB': _CurrencyMeta('Russian Ruble',      '₽',  '🇷🇺'),
-  'BTC': _CurrencyMeta('Bitcoin',            '₿',  '🪙'),
-  'ETH': _CurrencyMeta('Ethereum',           'Ξ',  '🔷'),
+  // ── Бесплатные ────────────────────────────────────────────────────────────
+  'USD': _CurrencyMeta('US Dollar',          r'$',   '🇺🇸'),
+  'EUR': _CurrencyMeta('Euro',               '€',    '🇪🇺'),
+  'GBP': _CurrencyMeta('British Pound',      '£',    '🇬🇧'),
+  'ILS': _CurrencyMeta('Israeli Shekel',     '₪',    '🇮🇱'),
+  'INR': _CurrencyMeta('Indian Rupee',       '₹',    '🇮🇳'),
+  // ── PRO — Азия/Океания ────────────────────────────────────────────────────
+  'JPY': _CurrencyMeta('Japanese Yen',       '¥',    '🇯🇵'),
+  'CNY': _CurrencyMeta('Chinese Yuan',       '¥',    '🇨🇳'),
+  'HKD': _CurrencyMeta('Hong Kong Dollar',   'HK\$', '🇭🇰'),
+  'SGD': _CurrencyMeta('Singapore Dollar',   'S\$',  '🇸🇬'),
+  'KRW': _CurrencyMeta('South Korean Won',   '₩',    '🇰🇷'),
+  'IDR': _CurrencyMeta('Indonesian Rupiah',  'Rp',   '🇮🇩'),
+  'MYR': _CurrencyMeta('Malaysian Ringgit',  'RM',   '🇲🇾'),
+  'PHP': _CurrencyMeta('Philippine Peso',    '₱',    '🇵🇭'),
+  'THB': _CurrencyMeta('Thai Baht',          '฿',    '🇹🇭'),
+  'NZD': _CurrencyMeta('New Zealand Dollar', 'NZ\$', '🇳🇿'),
+  'AUD': _CurrencyMeta('Australian Dollar',  'A\$',  '🇦🇺'),
+  // ── PRO — Европа ──────────────────────────────────────────────────────────
+  'CHF': _CurrencyMeta('Swiss Franc',        'Fr',   '🇨🇭'),
+  'NOK': _CurrencyMeta('Norwegian Krone',    'kr',   '🇳🇴'),
+  'SEK': _CurrencyMeta('Swedish Krona',      'kr',   '🇸🇪'),
+  'DKK': _CurrencyMeta('Danish Krone',       'kr',   '🇩🇰'),
+  'PLN': _CurrencyMeta('Polish Zloty',       'zł',   '🇵🇱'),
+  'CZK': _CurrencyMeta('Czech Koruna',       'Kč',   '🇨🇿'),
+  'HUF': _CurrencyMeta('Hungarian Forint',   'Ft',   '🇭🇺'),
+  'RON': _CurrencyMeta('Romanian Leu',       'lei',  '🇷🇴'),
+  'TRY': _CurrencyMeta('Turkish Lira',       '₺',    '🇹🇷'),
+  // ── PRO — Америка ─────────────────────────────────────────────────────────
+  'CAD': _CurrencyMeta('Canadian Dollar',    'C\$',  '🇨🇦'),
+  'BRL': _CurrencyMeta('Brazilian Real',     'R\$',  '🇧🇷'),
+  'MXN': _CurrencyMeta('Mexican Peso',       'MX\$', '🇲🇽'),
+  // ── PRO — Африка/Ближний Восток ───────────────────────────────────────────
+  'ZAR': _CurrencyMeta('South African Rand', 'R',    '🇿🇦'),
+  'AED': _CurrencyMeta('UAE Dirham',         'د.إ',  '🇦🇪'),
+  // ── PRO — Крипто ─────────────────────────────────────────────────────────
+  'BTC': _CurrencyMeta('Bitcoin',            '₿',    '🪙'),
+  'ETH': _CurrencyMeta('Ethereum',           'Ξ',    '🔷'),
 };

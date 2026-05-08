@@ -22,7 +22,7 @@ class _NaturalInputWidgetState extends ConsumerState<NaturalInputWidget> {
   static const _suggestions = [
     '100 usd to ils',
     '50 eur in btc',
-    '1000 rub to usd',
+    '1000 inr to usd',
     '1 btc in eur',
   ];
 

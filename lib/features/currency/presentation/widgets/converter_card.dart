@@ -11,7 +11,7 @@ import '../state/currency_notifier.dart';
 import '../screens/paywall_screen.dart';
 import 'animated_number.dart';
 
-const _freeCodes = ['USD', 'EUR', 'GBP', 'JPY', 'ILS', 'CHF', 'CAD', 'AUD'];
+const _freeCodes = ['USD', 'EUR', 'GBP', 'ILS', 'INR'];
 
 class ConverterCard extends ConsumerWidget {
   const ConverterCard({super.key});
@@ -69,8 +69,9 @@ class _UnlockMoreCurrencies extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.appColors;
+    final s = ref.watch(stringsProvider);
     return GestureDetector(
-      onTap: () => PaywallScreen.show(context),
+      onTap: () => _showCurrencyList(context, s),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -83,10 +84,67 @@ class _UnlockMoreCurrencies extends ConsumerWidget {
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           const Icon(Icons.lock_rounded, size: 13, color: AppTheme.accent),
           const Gap(6),
-          const Text('PRO — unlock CNY, AED, RUB, BTC, ETH',
-            style: TextStyle(fontSize: 12,
-                color: AppTheme.accent, fontWeight: FontWeight.w500)),
+          Text('PRO — unlock 25+ currencies',
+              style: const TextStyle(fontSize: 12,
+                  color: AppTheme.accent, fontWeight: FontWeight.w500)),
+          const Gap(4),
+          const Icon(Icons.info_outline_rounded,
+              size: 13, color: AppTheme.accent),
         ]),
+      ),
+    );
+  }
+
+  void _showCurrencyList(BuildContext context, dynamic s) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: context.appColors.bg,
+          borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 36, height: 4,
+                decoration: BoxDecoration(
+                    color: context.appColors.border,
+                    borderRadius: BorderRadius.circular(2))),
+            const Gap(16),
+            Text('PRO Currencies',
+                style: TextStyle(fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: context.appColors.textPrimary)),
+            const Gap(8),
+            Text(s.proUnlockCurrencies,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13,
+                    color: context.appColors.textSecondary,
+                    height: 1.8,
+                    fontFamily: 'monospace')),
+            const Gap(20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  PaywallScreen.show(context);
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accent,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14))),
+                child: const Text('Unlock PRO',
+                    style: TextStyle(color: Colors.white,
+                        fontSize: 15, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -150,7 +208,7 @@ class _CurrencyRow extends ConsumerWidget {
               ),
               const Gap(2),
               Text(rate?.name ?? '',
-                style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                  style: TextStyle(fontSize: 11, color: c.textSecondary)),
             ],
           ),
         ),
@@ -159,8 +217,8 @@ class _CurrencyRow extends ConsumerWidget {
           width: 130,
           child: isFrom
               ? _AmountInput(
-                  amount: amount ?? 0,
-                  onChanged: onAmountChanged)
+              amount: amount ?? 0,
+              onChanged: onAmountChanged)
               : _AmountResult(amount: amount),
         ),
       ]),
@@ -215,8 +273,8 @@ class _AmountInputState extends State<_AmountInput> {
             color: _focused ? AppTheme.accent : c.textPrimary,
             fontFamily: 'monospace'),
         decoration: const InputDecoration(
-          border: InputBorder.none, isDense: true,
-          contentPadding: EdgeInsets.zero),
+            border: InputBorder.none, isDense: true,
+            contentPadding: EdgeInsets.zero),
         onChanged: (v) {
           final n = double.tryParse(v.replaceAll(',', '.'));
           if (n != null && n > 0) widget.onChanged?.call(n);
@@ -245,8 +303,8 @@ class _AmountResult extends ConsumerWidget {
 
     if (amount == null) {
       return Text('—', textAlign: TextAlign.right,
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600,
-            color: c.textPrimary, fontFamily: 'monospace'));
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600,
+              color: c.textPrimary, fontFamily: 'monospace'));
     }
 
     return GestureDetector(
@@ -273,7 +331,7 @@ class _AmountResult extends ConsumerWidget {
           ),
         ),
         Text(s.tapToCopy,
-          style: TextStyle(fontSize: 9, color: c.textSecondary)),
+            style: TextStyle(fontSize: 9, color: c.textSecondary)),
       ]),
     );
   }

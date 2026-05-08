@@ -12,21 +12,23 @@ abstract interface class RemoteDatasource {
 
 class RemoteDatasourceImpl implements RemoteDatasource {
   final Dio _dio;
-
-  // frankfurter.app — бесплатно, без ключа, не блокирует
   static const _base = 'https://api.frankfurter.app';
+
+  // Все валюты с frankfurter.app
+  static const _allCurrencies =
+      'EUR,GBP,ILS,INR,JPY,CHF,CAD,AUD,CNY,HKD,SGD,'
+      'NOK,SEK,DKK,PLN,CZK,HUF,RON,TRY,ZAR,BRL,MXN,'
+      'IDR,KRW,MYR,PHP,THB,NZD,AED';
 
   RemoteDatasourceImpl(this._dio);
 
   @override
   Future<RatesModel> fetchRates() async {
-    // frankfurter возвращает: { "base": "USD", "rates": { "EUR": 0.92, ... } }
     final resp = await _dio.get(
       '$_base/latest',
       queryParameters: {
         'from': 'USD',
-        'to': 'EUR,ILS,GBP,JPY,CHF,CAD,AUD,CNY,AED,RUB',
-        // BTC/ETH frankfurter не поддерживает — добавим вручную ниже
+        'to': _allCurrencies,
       },
     );
 
@@ -34,14 +36,13 @@ class RemoteDatasourceImpl implements RemoteDatasource {
       throw Exception('HTTP ${resp.statusCode}');
     }
 
-    final data = resp.data as Map<String, dynamic>;
+    final data  = resp.data as Map<String, dynamic>;
     final rates = Map<String, dynamic>.from(data['rates'] as Map);
 
-    // Добавляем USD как базу
+    // USD как база
     rates['USD'] = 1.0;
 
-    // BTC и ETH — статичные приблизительные значения как fallback
-    // В реальном приложении можно добавить отдельный запрос к coingecko
+    // BTC и ETH — статичные значения (frankfurter не поддерживает)
     rates['BTC'] = 0.0000152;
     rates['ETH'] = 0.000276;
 
@@ -54,7 +55,7 @@ class RemoteDatasourceImpl implements RemoteDatasource {
     required String target,
     required int days,
   }) async {
-    // BTC/ETH frankfurter не поддерживает — возвращаем mock
+    // Крипта — только mock
     if (base == 'BTC' || base == 'ETH' ||
         target == 'BTC' || target == 'ETH') {
       return _mockHistory(days, seed: base.hashCode + target.hashCode);
@@ -63,31 +64,31 @@ class RemoteDatasourceImpl implements RemoteDatasource {
     final end   = DateTime.now();
     final start = end.subtract(Duration(days: days));
 
-    final resp = await _dio.get(
-      '$_base/${_fmt(start)}..${_fmt(end)}',
-      queryParameters: {
-        'from': base,
-        'to': target,
-      },
-    );
+    try {
+      final resp = await _dio.get(
+        '$_base/${_fmt(start)}..${_fmt(end)}',
+        queryParameters: {'from': base, 'to': target},
+      );
 
-    if (resp.statusCode != 200) throw Exception('HTTP ${resp.statusCode}');
+      if (resp.statusCode != 200) throw Exception('HTTP ${resp.statusCode}');
 
-    final data   = resp.data as Map<String, dynamic>;
-    final ratesMap = data['rates'] as Map<String, dynamic>;
+      final data     = resp.data as Map<String, dynamic>;
+      final ratesMap = data['rates'] as Map<String, dynamic>;
+      final sorted   = ratesMap.entries.toList()
+        ..sort((a, b) => a.key.compareTo(b.key));
 
-    // Сортируем по дате и возвращаем значения
-    final sorted = ratesMap.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
-
-    return sorted.map((e) {
-      final day = e.value as Map<String, dynamic>;
-      return (day[target] as num).toDouble();
-    }).toList();
+      return sorted.map((e) {
+        final day = e.value as Map<String, dynamic>;
+        return (day[target] as num).toDouble();
+      }).toList();
+    } catch (_) {
+      return _mockHistory(days, seed: base.hashCode + target.hashCode);
+    }
   }
 
   String _fmt(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      '${d.year}-${d.month.toString().padLeft(2,'0')}-'
+          '${d.day.toString().padLeft(2,'0')}';
 
   List<double> _mockHistory(int days, {int seed = 0}) {
     double v = 1.0 + (seed % 10) * 0.1;

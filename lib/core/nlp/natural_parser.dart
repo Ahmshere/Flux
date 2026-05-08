@@ -1,33 +1,34 @@
 class NaturalInputParser {
   static const _aliases = <String, String>{
-    'dollar': 'USD',
-    'dollars': 'USD',
-    'usd': 'USD',
-    'euro': 'EUR',
-    'euros': 'EUR',
-    'eur': 'EUR',
-    'shekel': 'ILS',
-    'shekels': 'ILS',
-    'ils': 'ILS',
-    'pound': 'GBP',
-    'pounds': 'GBP',
-    'gbp': 'GBP',
-    'yen': 'JPY',
-    'jpy': 'JPY',
-    'franc': 'CHF',
-    'chf': 'CHF',
-    'yuan': 'CNY',
-    'cny': 'CNY',
-    'dirham': 'AED',
-    'aed': 'AED',
-    'ruble': 'RUB',
-    'rubles': 'RUB',
-    'rub': 'RUB',
-    'bitcoin': 'BTC',
-    'btc': 'BTC',
-    'ethereum': 'ETH',
-    'ether': 'ETH',
-    'eth': 'ETH',
+    // ── English ───────────────────────────────────────────────────────────
+    'dollar': 'USD',   'dollars': 'USD',  'usd': 'USD',
+    'euro': 'EUR',     'euros': 'EUR',    'eur': 'EUR',
+    'shekel': 'ILS',   'shekels': 'ILS', 'ils': 'ILS',
+    'pound': 'GBP',    'pounds': 'GBP',  'gbp': 'GBP',
+    'rupee': 'INR',    'rupees': 'INR',  'inr': 'INR',
+    'yen': 'JPY',      'jpy': 'JPY',
+    'franc': 'CHF',    'chf': 'CHF',
+    'yuan': 'CNY',     'cny': 'CNY',
+    'won': 'KRW',      'krw': 'KRW',
+    'baht': 'THB',     'thb': 'THB',
+    'ringgit': 'MYR',  'myr': 'MYR',
+    'peso': 'MXN',     'mxn': 'MXN',
+    'real': 'BRL',     'brl': 'BRL',
+    'rand': 'ZAR',     'zar': 'ZAR',
+    'lira': 'TRY',     'try': 'TRY',
+    'krone': 'NOK',    'nok': 'NOK',
+    'krona': 'SEK',    'sek': 'SEK',
+    'dirham': 'AED',   'aed': 'AED',
+    'zloty': 'PLN',    'pln': 'PLN',
+    'bitcoin': 'BTC',  'btc': 'BTC',
+    'ethereum': 'ETH', 'eth': 'ETH',
+    'cad': 'CAD',      'aud': 'AUD',
+    'hkd': 'HKD',      'sgd': 'SGD',
+    'dkk': 'DKK',      'czk': 'CZK',
+    'huf': 'HUF',      'ron': 'RON',
+    'idr': 'IDR',      'php': 'PHP',
+    'nzd': 'NZD',
+    // ── Русский ───────────────────────────────────────────────────────────
     '\u0434\u043e\u043b\u043b\u0430\u0440': 'USD',
     '\u0434\u043e\u043b\u043b\u0430\u0440\u044b': 'USD',
     '\u0431\u0430\u043a\u0441': 'USD',
@@ -41,14 +42,18 @@ class NaturalInputParser {
     '\u0444\u0440\u0430\u043d\u043a': 'CHF',
     '\u044e\u0430\u043d\u044c': 'CNY',
     '\u0434\u0438\u0440\u0445\u0430\u043c': 'AED',
-    '\u0440\u0443\u0431\u043b\u044c': 'RUB',
-    '\u0440\u0443\u0431\u043b\u0438': 'RUB',
-    '\u0440\u0443\u0431': 'RUB',
+    '\u0440\u0443\u043f\u0438\u044f': 'INR',
+    '\u0440\u0443\u043f\u0438\u0438': 'INR',
+    '\u043b\u0438\u0440\u0430': 'TRY',
+    '\u043f\u0435\u0441\u043e': 'MXN',
+    '\u0437\u043b\u043e\u0442\u044b\u0439': 'PLN',
+    '\u043a\u0440\u043e\u043d\u0430': 'NOK',
+    '\u0431\u0430\u0442': 'THB',
+    '\u0432\u043e\u043d': 'KRW',
     '\u0431\u0438\u0442\u043a\u043e\u0438\u043d': 'BTC',
     '\u044d\u0444\u0438\u0440': 'ETH',
   };
 
-  // Разделитель: пробел + (to | in | во | в) + пробел
   static final _sep = RegExp(
     r'\s+(?:to|in|\u0432\u043e|\u0432)\s+',
     caseSensitive: false,
@@ -61,7 +66,7 @@ class NaturalInputParser {
     final sepMatch = _sep.firstMatch(str);
     if (sepMatch == null) return null;
 
-    final left = str.substring(0, sepMatch.start).trim();
+    final left  = str.substring(0, sepMatch.start).trim();
     final right = str.substring(sepMatch.end).trim();
     if (left.isEmpty || right.isEmpty) return null;
 
@@ -69,25 +74,23 @@ class NaturalInputParser {
     double? amount;
     String? fromWord;
 
-    // "100 usd"
     final n1 = double.tryParse(leftTokens.first.replaceAll(',', '.'));
     if (n1 != null && leftTokens.length >= 2) {
-      amount = n1;
+      amount   = n1;
       fromWord = leftTokens[1];
     } else if (leftTokens.length >= 2) {
-      // "usd 100"
       final n2 = double.tryParse(leftTokens.last.replaceAll(',', '.'));
       if (n2 != null) {
-        amount = n2;
+        amount   = n2;
         fromWord = leftTokens.first;
       }
     }
 
     if (amount == null || fromWord == null || amount <= 0) return null;
 
-    final toWord = right.split(RegExp(r'\s+')).first;
+    final toWord   = right.split(RegExp(r'\s+')).first;
     final fromCode = _resolve(fromWord);
-    final toCode = _resolve(toWord);
+    final toCode   = _resolve(toWord);
 
     if (fromCode == null || toCode == null || fromCode == toCode) return null;
 
@@ -107,13 +110,11 @@ class ParseResult {
   final double amount;
   final String fromCode;
   final String toCode;
-
   const ParseResult({
     required this.amount,
     required this.fromCode,
     required this.toCode,
   });
-
   @override
   String toString() => 'ParseResult($amount $fromCode -> $toCode)';
 }
